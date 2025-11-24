@@ -13,15 +13,15 @@ options:
   ssh_host: 123.123.123.123
   ssh_user: root
   ssh_port: 22
-  tunnel_http: true
-  tunnel_https: true
+  # Удалены tunnel_http и tunnel_https
+  tunnel_ports: # Новый параметр для кастомных портов, например, ["80:80", "443:8443"]
   socks_port: 1080
 schema:
   ssh_host: "str"
   ssh_user: "str"
   ssh_port: "int"
-  tunnel_http: "bool"
-  tunnel_https: "bool"
+  # Удалены tunnel_http: "bool" и tunnel_https: "bool"
+  tunnel_ports: "list(str)?" # Опциональный список строк
   socks_port: "int"
   advanced: "str?"
   before: "str?"

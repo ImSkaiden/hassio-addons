@@ -11,16 +11,32 @@ cat /root/.ssh/id_rsa.pub
 BASE="ssh -o StrictHostKeyChecking=no"
 TUN="-o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -N"
 
-if bashio::config.true 'tunnel_http'; then
-    # -R remote_socket:host:hostport
-    # Specifies that connections to the given TCP port or Unix socket on the
-    # remote (server) host are to be forwarded to the local side.
-    TUN="${TUN} -R 80:localhost:80"
+# --- ИЗМЕНЕНИЯ ЗДЕСЬ ---
+
+if bashio::config.has_value 'tunnel_ports'; then
+    for port_pair in $(bashio::config 'tunnel_ports'); do
+        # port_pair должен быть в формате remote_port:local_port, например 80:8080
+        # Если вы хотите разрешить привязку к 0.0.0.0 (любому интерфейсу) на удаленном сервере,
+        # формат должен быть remote_ip:remote_port:local_ip:local_port
+        # Но для простоты (как в исходном коде) используем remote_port:localhost:local_port
+        
+        # Разделяем строку на удаленный и локальный порт
+        REMOTE_PORT=$(echo "${port_pair}" | cut -d ':' -f 1)
+        LOCAL_PORT=$(echo "${port_pair}" | cut -d ':' -f 2)
+
+        if [ -n "$REMOTE_PORT" ] && [ -n "$LOCAL_PORT" ]; then
+            bashio::log.info "Adding tunnel: -R ${REMOTE_PORT}:localhost:${LOCAL_PORT}"
+            # -R remote_socket:host:hostport
+            # Подключения к удаленному порту REMOTE_PORT будут перенаправлены на localhost:LOCAL_PORT
+            TUN="${TUN} -R ${REMOTE_PORT}:localhost:${LOCAL_PORT}"
+        else
+            bashio::log.warning "Invalid port pair in tunnel_ports: ${port_pair}. Skipping."
+        fi
+    done
 fi
 
-if bashio::config.true 'tunnel_https'; then
-    TUN="${TUN} -R 443:localhost:443"
-fi
+# --- КОНЕЦ ИЗМЕНЕНИЙ ---
+
 
 if ! bashio::config.equals 'socks_port' 0; then
     # -D [bind_address:]port
