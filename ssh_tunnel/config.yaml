@@ -4,7 +4,7 @@ url: https://github.com/AlexxIT/hassio-addons/tree/master/ssh_tunnel
 arch: [ amd64, aarch64, i386, armv7, armhf ]
 
 # https://developers.home-assistant.io/docs/add-ons/configuration
-version: 1.0.6
+version: 1.0.7
 slug: ssh_tunnel
 init: false
 startup: system
@@ -21,7 +21,8 @@ schema:
   ssh_user: "str"
   ssh_port: "int"
   # Удалены tunnel_http: "bool" и tunnel_https: "bool"
-  tunnel_ports: "list(str)?" # Опциональный список строк
+  tunnel_ports:
+    - str
   socks_port: "int"
   advanced: "str?"
   before: "str?"
